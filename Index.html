@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+          integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <link rel="stylesheet" href="ind.css">
+
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+
+    <script
+            src="https://code.jquery.com/jquery-3.2.1.js"
+            integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
+            crossorigin="anonymous">
+    </script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+
+</head>
+<body id="body">
+
+<div class="search">
+    <input type="text" placeholder="" id="input">
+    <button id="button">submit</button>
+</div>
+
+<div id="general">
+    <ul id="image"></ul>
+    <div id="drop"></div>
+</div>
+
+<div id="SlideButton"></div>
+
+
+<div id="myModal" class="modal">
+
+    <div class="modal-content" id="slide">
+        <span class="close">&times;</span>
+        <div id="SlideImage"></div>
+    </div>
+
+</div>
+
+
+</body>
+
+<script>
+
+
+    $('#button').on('click', function () {
+        var input = $('#input').val();
+        var mydiv = document.getElementById('drop');
+        var masiv = input.split(' ');
+        var GrButton = document.getElementById('SlideButton');
+        var cou = 0;
+        if ($(mydiv).is(':empty')) {
+            for (var h = 0; h < masiv.length; h++) {
+                mydiv.innerHTML += '<ul id="droppable' + cou + '" class="ui-widget-header drop"><p class="mytext">Drop me here</p></ul>';
+                GrButton.innerHTML += '<button id="myBtn' + cou + '" hidden class="but">Open Slide ' + cou + '</button>';
+                cou++
+            }
+        }
+
+        $.ajax({
+            type: "GET",
+            url: "index.php",
+            data: {
+                mysearch: input
+            }
+        }).done(function (response) {
+            var img = $.parseJSON(response);
+            var general = document.getElementById('image');
+            var count = 0;
+            var count2 = 0;
+            var countWord = img.length / 5;
+            var countSlide = 0;
+            for (var i = 1; i <= 5; i++) {
+                if (count >= countWord) {
+                    break;
+                } else if (i == 5) {
+                    i = 0;
+                    general.innerHTML += ('<li class="name' + count + '" style="display: inline-block; margin: 2px;"><img src="' + img[count2] + '" width="120" height="150"></li>');
+                    count++;
+                    countSlide++;
+                } else {
+                    general.innerHTML += ('<li class="name' + count + '" style="display: inline-block; margin: 2px;"><img src="' + img[count2] + '" width="120" height="150"></li>');
+                }
+                count2++
+            }
+
+            var $name = $(".drop");
+            var $drop = $("#droppable0, #droppable1, #droppable2, #droppable3, #droppable4, #droppable5");
+            $($drop, $name).sortable({
+                axis: "x"
+            });
+            $($drop, $name).disableSelection();
+
+
+            var modal = $('#myModal');
+            var span = $('.close');
+            var SlideDiv = $('#SlideImage');
+
+
+            $(".name0").draggable({
+              //  containment: "#container",
+                helper: 'clone',
+                revert: "invalid"
+
+            });
+            $("#droppable0").droppable({
+              //  hoverClass: 'ui-state-highlight',
+                accept: ".name0",
+                helper: "clone",
+                accept: ":not(.ui-sortable-helper)",
+                drop: function (event, ui) {
+                    $(ui.draggable).clone().appendTo(this);
+                    $(ui.draggable).remove();
+                    $('.mytext').css('display', 'none');
+                    $('.drop').css('height', '156px');
+                    var asd = $('#droppable0').find("li");
+
+                    if (asd.length == 5) {
+                        var btn = $('#myBtn0');
+                        btn.css('display', 'block');
+                        btn.on('click', function () {
+                            modal.css('display', 'block');
+
+                            if ($(SlideDiv).is(':empty')) {
+                                $(".name0").clone().prependTo(SlideDiv);
+                                var slideIndex = 0;
+
+                                showSlides();
+                                $('#SlideImage > .name0 > img').css({'height': '400px', 'width': '400px'});
+
+                                function showSlides() {
+                                    var i;
+                                    var slides = $("#SlideImage > li");
+
+                                    for (i = 0; i < slides.length; i++) {
+                                        slides[i].style.display = "none";
+                                    }
+                                    slideIndex++;
+                                    if (slideIndex > slides.length) {
+                                        slideIndex = 1
+                                    }
+
+                                    slides[slideIndex - 1].style.display = "block";
+
+                                    setTimeout(showSlides, 2000);
+
+                                }
+
+                            }
+
+
+                        });
+                        span.on('click', function () {
+                            modal.css('display', 'none');
+                            SlideDiv.children().remove();
+                        });
+
+                    }
+
+
+                }
+
+
+            });
+
+
+            $(".name1").draggable({
+                containment: "#container",
+                helper: 'clone',
+                revert: "invalid"
+
+            });
+            $("#droppable1").droppable({
+                hoverClass: 'ui-state-highlight',
+                accept: ".name1",
+                helper: "clone",
+                accept: ":not(.ui-sortable-helper)",
+
+                drop: function (event, ui) {
+                    $(ui.draggable).clone().appendTo(this);
+                    $(ui.draggable).remove();
+
+                    $('.mytext').css('display', 'none');
+                    $('.drop').css('height', '156px');
+                    var asd = $('#droppable1').find("li");
+
+                    if (asd.length == 5) {
+                        var btn = $('#myBtn1');
+                        btn.css('display', 'block');
+                        btn.on('click', function () {
+                            modal.css('display', 'block');
+
+                            if ($(SlideDiv).is(':empty')) {
+                                $(".name1").clone().prependTo(SlideDiv);
+                                var slideIndex = 0;
+
+                                showSlides();
+                                $('#SlideImage > .name1 > img').css({'height': '400px', 'width': '400px'});
+
+                                function showSlides() {
+                                    var i;
+                                    var slides = $("#SlideImage > li");
+
+                                    for (i = 0; i < slides.length; i++) {
+                                        slides[i].style.display = "none";
+                                    }
+                                    slideIndex++;
+                                    if (slideIndex > slides.length) {
+                                        slideIndex = 1
+                                    }
+
+                                    slides[slideIndex - 1].style.display = "block";
+
+                                    setTimeout(showSlides, 2000);
+
+                                }
+
+                            }
+
+
+                        });
+                        span.on('click', function () {
+                            modal.css('display', 'none');
+                            SlideDiv.children().remove();
+                        });
+
+                    }
+
+
+                }
+
+            });
+
+
+            $(".name2").draggable({
+                containment: "#container",
+                helper: 'clone',
+                revert: "invalid"
+            });
+            $("#droppable2").droppable({
+                accept: ".name2",
+                hoverClass: 'ui-state-highlight',
+                helper: "clone",
+                accept: ":not(.ui-sortable-helper)",
+
+                drop: function (event, ui) {
+                    $(ui.draggable).clone().appendTo(this);
+                    $(ui.draggable).remove();
+                    $('.mytext').css('display', 'none');
+                    $('.drop').css('height', '156px');
+                    var asd = $('#droppable2').find("li");
+
+                    if (asd.length == 5) {
+                        var btn = $('#myBtn2');
+                        btn.css('display', 'block');
+                        btn.on('click', function () {
+                            modal.css('display', 'block');
+
+                            if ($(SlideDiv).is(':empty')) {
+                                $(".name2").clone().prependTo(SlideDiv);
+                                var slideIndex = 0;
+
+                                showSlides();
+                                $('#SlideImage > .name2 > img').css({'height': '400px', 'width': '400px'});
+
+                                function showSlides() {
+                                    var i;
+                                    var slides = $("#SlideImage > li");
+
+                                    for (i = 0; i < slides.length; i++) {
+                                        slides[i].style.display = "none";
+                                    }
+                                    slideIndex++;
+                                    if (slideIndex > slides.length) {
+                                        slideIndex = 1
+                                    }
+
+                                    slides[slideIndex - 1].style.display = "block";
+
+                                    setTimeout(showSlides, 2000);
+
+                                }
+
+                            }
+
+
+                        });
+                        span.on('click', function () {
+                            modal.css('display', 'none');
+                            SlideDiv.children().remove();
+                        });
+
+                    }
+
+
+                }
+            });
+
+
+            $(".name3").draggable({
+                containment: "#container",
+                helper: 'clone',
+                revert: "invalid"
+            });
+            $("#droppable3").droppable({
+                accept: ".name3",
+                hoverClass: 'ui-state-highlight',
+                helper: "clone",
+                accept: ":not(.ui-sortable-helper)",
+
+                drop: function (event, ui) {
+                    $(ui.draggable).clone().appendTo(this);
+                    $(ui.draggable).remove();
+                    $('.mytext').css('display', 'none');
+                    $('.drop').css('height', '156px');
+                    var asd = $('#droppable3').find("li");
+
+                    if (asd.length == 5) {
+                        var btn = $('#myBtn3');
+                        btn.css('display', 'block');
+                        btn.on('click', function () {
+                            modal.css('display', 'block');
+
+                            if ($(SlideDiv).is(':empty')) {
+                                $(".name3").clone().prependTo(SlideDiv);
+                                var slideIndex = 0;
+
+                                showSlides();
+                                $('#SlideImage > .name3 > img').css({'height': '400px', 'width': '400px'});
+
+                                function showSlides() {
+                                    var i;
+                                    var slides = $("#SlideImage > li");
+
+                                    for (i = 0; i < slides.length; i++) {
+                                        slides[i].style.display = "none";
+                                    }
+                                    slideIndex++;
+                                    if (slideIndex > slides.length) {
+                                        slideIndex = 1
+                                    }
+
+                                    slides[slideIndex - 1].style.display = "block";
+
+                                    setTimeout(showSlides, 2000);
+
+                                }
+
+                            }
+
+
+                        });
+                        span.on('click', function () {
+                            modal.css('display', 'none');
+                            SlideDiv.children().remove();
+
+                        });
+
+                    }
+
+
+                }
+            });
+
+
+            $(".name4").draggable({
+                containment: "#container",
+                helper: 'clone',
+                revert: "invalid"
+            });
+            $("#droppable4").droppable({
+                accept: ".name4",
+                hoverClass: 'ui-state-highlight',
+                helper: "clone",
+                accept: ":not(.ui-sortable-helper)",
+
+                drop: function (event, ui) {
+                    $(ui.draggable).clone().appendTo(this);
+                    $(ui.draggable).remove();
+                    $('.mytext').css('display', 'none');
+                    $('.drop').css('height', '156px');
+                    var asd = $('#droppable4').find("li");
+
+                    if (asd.length == 5) {
+                        var btn = $('#myBtn4');
+                        btn.css('display', 'block');
+                        btn.on('click', function () {
+                            modal.css('display', 'block');
+
+                            if ($(SlideDiv).is(':empty')) {
+                                $(".name4").clone().prependTo(SlideDiv);
+                                var slideIndex = 0;
+
+                                showSlides();
+                                $('#SlideImage > .name4 > img').css({'height': '400px', 'width': '400px'});
+
+                                function showSlides() {
+                                    var i;
+                                    var slides = $("#SlideImage > li");
+
+                                    for (i = 0; i < slides.length; i++) {
+                                        slides[i].style.display = "none";
+                                    }
+                                    slideIndex++;
+                                    if (slideIndex > slides.length) {
+                                        slideIndex = 1
+                                    }
+
+                                    slides[slideIndex - 1].style.display = "block";
+
+                                    setTimeout(showSlides, 2000);
+
+                                }
+
+                            }
+
+
+                        });
+                        span.on('click', function () {
+                            modal.css('display', 'none');
+                            SlideDiv.children().remove();
+                        });
+
+                    }
+
+
+                }
+            });
+            $(".name5").draggable({
+                containment: "#container",
+                helper: 'clone',
+                revert: "invalid"
+            });
+            $("#droppable5").droppable({
+                accept: ".name5",
+                hoverClass: 'ui-state-highlight',
+                helper: "clone",
+                accept: ":not(.ui-sortable-helper)",
+
+                drop: function (event, ui) {
+                    $(ui.draggable).clone().appendTo(this);
+                    $(ui.draggable).remove();
+                    $('.mytext').css('display', 'none');
+                    $('.drop').css('height', '156px');
+                    var asd = $('#droppable5').find("li");
+
+                    if (asd.length == 5) {
+                        var btn = $('#myBtn5');
+                        btn.css('display', 'block');
+                        btn.on('click', function () {
+                            modal.css('display', 'block');
+
+                            if ($(SlideDiv).is(':empty')) {
+                                $(".name5").clone().prependTo(SlideDiv);
+                                var slideIndex = 0;
+
+                                showSlides();
+                                $('#SlideImage > .name5 > img').css({'height': '400px', 'width': '400px'});
+
+                                function showSlides() {
+                                    var i;
+                                    var slides = $("#SlideImage > li");
+
+                                    for (i = 0; i < slides.length; i++) {
+                                        slides[i].style.display = "none";
+                                    }
+                                    slideIndex++;
+                                    if (slideIndex > slides.length) {
+                                        slideIndex = 1
+                                    }
+
+                                    slides[slideIndex - 1].style.display = "block";
+
+                                    setTimeout(showSlides, 2000);
+
+                                }
+
+                            }
+
+
+                        });
+                        span.on('click', function () {
+                            modal.css('display', 'none');
+                            SlideDiv.children().remove();
+                        });
+
+                    }
+
+
+                }
+            });
+
+
+        });
+
+    });
+
+
+</script>
+</html>
